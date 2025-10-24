@@ -98,8 +98,8 @@ class GoogleSearch {
         };
 
         try {
-            // Добавляем случайную задержку 3-7 секунд для имитации человеческого поведения
-            await new Promise(resolve => setTimeout(resolve, Math.random() * 4000 + 3000));
+            // Добавляем случайную задержку 5-10 секунд для имитации человеческого поведения и избежания детекции
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 5000 + 5000));
             
             const response = await axios.get(`${url}?${params.toString()}`, axiosConfig);
             
@@ -115,13 +115,11 @@ class GoogleSearch {
                 html.includes('try again later') ||
                 html.includes('https://www.google.com/sorry')) {
                 
-                console.log('Google обнаружил автоматический запрос (код:', status, ')');
                 return '<html><body>blocked</body></html>';
             }
             
             return html;
         } catch (error: any) {
-            console.log('Ошибка при запросе к Google:', error.message || error.code);
             // Возвращаем специальный HTML для обработки
             return '<html><body>request_error</body></html>';
         }
@@ -130,38 +128,8 @@ class GoogleSearch {
     private static parseResults(html: string, unique: boolean = false): SearchResult[] {
         // Проверяем, заблокирован ли запрос
         if (html.includes('blocked') || html.includes('request_error')) {
-            console.log('Google заблокировал запрос. Используем альтернативный источник для демонстрации работы.');
-            
-            // Возвращаем тестовые данные для демонстрации функциональности
-            const mockResults: SearchResult[] = [
-                {
-                    url: 'https://ru.wikipedia.org/wiki/%D0%A1%D0%B5%D1%82%D0%BA%D0%B0_%D0%A0%D0%B0%D0%B1%D0%B8%D1%86%D0%B0',
-                    title: 'Сетка Рабица — Википедия',
-                    description: 'Сетка Рабица используется в основном для ограждения территорий и не защищена от дождя и токсичных газов. Поэтому, если сетку Рабица не защитить от воздействия влаги, то она после первого дождя начнет ржаветь ...'
-                },
-                {
-                    url: 'https://www.ozon.ru/category/setka-rabitsa-metallicheskaya/',
-                    title: 'Сетка Рабица Металлическая Купить На Ozon По Низкой Цене',
-                    description: 'Сетка рабица металлическая - покупайте на OZON по выгодным ценам! Быстрая и бесплатная доставка, большой ассортимент, бонусы, рассрочка и кэшбэк. Распродажи, скидки и акции. Реальные отзывы покупателей.'
-                },
-                {
-                    url: 'https://www.vseinstrumenti.ru/tag-page/setka-rabitsa-680204/',
-                    title: 'Сетка рабица купить: выгодные цены от 133 рублей',
-                    description: 'Купить Сетка рабица - свыше 11 оригинальных товаров по цене от 133 рублей с быстрой и бесплатной доставкой в 1200+ магазинов и гарантией по всей России: отзывы, отсрочка для юрлиц, выбор по параметрам, производители, фото ...'
-                },
-                {
-                    url: 'https://armaturadom.ru/blog/setka-rabitsa-vybor-primenenie/',
-                    title: 'Сетка рабица для забора и ограждений: виды, монтаж, преимущества',
-                    description: 'Качественная сетка рабица с правильно выполненным монтажом может прослужить более 20 лет, что делает её весьма выгодным вложением с точки зрения соотношения цены и срока службы.'
-                },
-                {
-                    url: 'https://rusrabica.ru/katalog',
-                    title: 'Сетка рабица оптом со склада и под заказ | Цена от производителя',
-                    description: 'Предлагаем более 50 видов сетки рабицы со склада и возможность заказа сетки индивидуально под ваши параметры. Собственное производство позволяет нам брать заказы больших объёмов и устанавливать низкие цены на сетку ...'
-                }
-            ];
-            
-            return unique ? [mockResults[0]] : mockResults;
+            // Возвращаем пустой массив, если запрос заблокирован
+            return [];
         }
 
         const $ = cheerio.load(html);
@@ -312,8 +280,6 @@ class GoogleSearch {
 
         // Если результаты не найдены через селекторы, пробуем извлечь с помощью регулярных выражений
         if (!foundResults && results.length === 0) {
-            console.log('Селекторы не нашли результаты, пробуем альтернативный метод');
-            
             // Используем регулярные выражения для извлечения ссылок и заголовков из HTML
             const urlMatches = html.match(/\/url\?q=([^&"<>]+)/g);
             if (urlMatches) {
@@ -321,13 +287,8 @@ class GoogleSearch {
                     const url = decodeURIComponent(match.replace('/url?q=', ''));
                     
                     if (!url.includes('google.com') && !seenUrls.has(url)) {
-                        // Пытаемся извлечь заголовок рядом с ссылкой
-                        const titleMatch = html.match(new RegExp(`(\\/url\\?q\\=${match.replace(/[.*+?^${}()|\\[\\]\\]/g, '\\$&')}[^]*?)([A-Z][^<]{10,100})<\\/a>`));
-                        let title = `Ссылка: ${url.substring(0, 50)}${url.length > 50 ? '...' : ''}`;
-                        
-                        if (titleMatch) {
-                            title = titleMatch[2].trim();
-                        }
+                        // Создаем простой заголовок
+                        const title = `Ссылка: ${url.substring(0, 50)}${url.length > 50 ? '...' : ''}`;
                         
                         if (unique) {
                             if (!seenUrls.has(url)) {
