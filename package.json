@@ -1,0 +1,52 @@
+{
+  "name": "google-search-ts",
+  "version": "1.0.1",
+  "description": "A TypeScript library for performing Google searches with support for proxy, pagination, and customization",
+  "main": "dist/googleSearch.js",
+  "types": "dist/googleSearch.d.ts",
+  "bin": {
+    "google-search-ts": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/googleSearch.js",
+    "dev": "ts-node src/test.ts",
+    "cli": "node dist/cli.js"
+  },
+  "keywords": [
+    "google",
+    "search",
+    "scraping",
+    "typescript",
+    "web-scraping",
+    "search-engine",
+    "google-search",
+    "google-scraper"
+  ],
+  "author": "tkattkat",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.2",
+    "typescript": "^5.7.3",
+    "ts-node": "^10.9.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tkattkat/google-search-scraper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tkattkat/google-search-scraper/issues"
+  },
+  "homepage": "https://github.com/tkattkat/google-search-scraper#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}

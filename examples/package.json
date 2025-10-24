@@ -1,0 +1,16 @@
+{
+  "name": "google-search-examples",
+  "version": "1.0.0",
+  "description": "Examples for google-search-ts library",
+  "main": "index.js",
+  "scripts": {
+    "example": "ts-node examples/basic-search.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "google-search-ts": "file:."
+  }
+}
