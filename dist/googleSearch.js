@@ -261,12 +261,43 @@ class GoogleSearch {
     }
     static search(term_1) {
         return __awaiter(this, arguments, void 0, function* (term, options = {}) {
-            // Ограничиваем количество результатов, если задано
-            const maxResults = options.numResults || 10;
-            const html = yield GoogleSearch.makeRequest(term, options);
-            let results = GoogleSearch.parseResults(html, options.unique);
-            // Возвращаем только запрошенное количество результатов
-            return results.slice(0, maxResults);
+            const { numResults = 10, start = 0, unique = false } = options;
+            // Если запрашиваем больше результатов, чем можно получить за один запрос,
+            // используем пагинацию для получения дополнительных результатов
+            const results = [];
+            const seenUrls = new Set();
+            // Получаем результаты постранично
+            let currentPage = Math.floor(start / 10);
+            let resultsNeeded = numResults;
+            let currentStart = start;
+            while (resultsNeeded > 0) {
+                // Ограничиваем количество результатов за один запрос до 10
+                const requestNum = Math.min(resultsNeeded, 10);
+                // Создаем временные опции для запроса
+                const requestOptions = Object.assign(Object.assign({}, options), { numResults: requestNum, start: currentStart });
+                const html = yield GoogleSearch.makeRequest(term, requestOptions);
+                const pageResults = GoogleSearch.parseResults(html, false); // Не применяем уникальность при получении страниц
+                // Применяем параметр уникальности
+                for (const result of pageResults) {
+                    if (!unique || !seenUrls.has(result.url)) {
+                        seenUrls.add(result.url);
+                        results.push(result);
+                    }
+                }
+                // Если не получили результатов, прекращаем попытки
+                if (pageResults.length === 0) {
+                    break;
+                }
+                // Увеличиваем смещение для следующего запроса
+                currentStart += pageResults.length;
+                resultsNeeded = numResults - results.length;
+                // Добавляем задержку между запросами, чтобы не быть заблокированным
+                if (resultsNeeded > 0) {
+                    yield new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+                }
+            }
+            // Применяем начальное смещение и ограничиваем количество результатов
+            return results.slice(0, numResults);
         });
     }
 }
