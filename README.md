@@ -8,13 +8,82 @@ A TypeScript library for performing Google searches with support for proxy, pagi
 npm install google-search-ts
 ```
 
-## Usage
+## CLI Usage
 
+After installation, you can use the library directly from the command line:
+
+```bash
+npx google-search-ts "TypeScript programming"
+```
+
+### CLI Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `<query>` | string | - | Search query |
+| `--numResults` | number | 10 | Number of results to return |
+| `--lang` | string | 'en' | Language for search results |
+| `--proxy` | string | undefined | Proxy URL (e.g., 'http://proxy.example.com:8080') |
+| `--timeout` | number | 5000 | Request timeout in milliseconds |
+| `--safe` | 'active' \| 'off' | 'active' | SafeSearch setting |
+| `--region` | string | undefined | Region for search results |
+| `--start` | number | 0 | Starting position for pagination |
+| `--unique` | boolean | false | Remove duplicate URLs from results |
+| `--help` | - | - | Show help message |
+
+### CLI Examples
+
+```bash
+# Basic search
+npx google-search-ts "TypeScript tutorial"
+
+# Search with specific number of results
+npx google-search-ts "JavaScript framework" --numResults 5
+
+# Search with localization
+npx google-search-ts "Node.js documentation" --lang ru --region RU
+
+# Search with safety settings
+npx google-search-ts "React tutorial" --safe off --timeout 10000
+
+# Search with duplicate filtering
+npx google-search-ts "Python programming" --numResults 20 --unique
+
+# Search with pagination
+npx google-search-ts "Web development" --start 10 --numResults 5
+```
+
+## Programmatic Usage
+
+### Installation
+```bash
+npm install google-search-ts
+```
+
+### Basic search
+```typescript
+import { GoogleSearch } from 'google-search-ts';
+
+async function basicSearch() {
+    try {
+        const results = await GoogleSearch.search('nodejs typescript');
+        console.log(`Found ${results.length} results`);
+        
+        // Print the first result
+        console.log('First result:', {
+            title: results[0].title,
+            url: results[0].url,
+            description: results[0].description
+        });
+    } catch (error) {
+        console.error('Search failed:', error.message);
+    }
+}
+```
+
+### Search with options
 ```typescript
 import { GoogleSearch, SearchOptions } from 'google-search-ts';
-
-// Basic search
-const results = await GoogleSearch.search('nodejs typescript');
 
 // Search with options
 const options: SearchOptions = {
@@ -197,10 +266,21 @@ async function robustSearch() {
 | start | number | 0 | Starting position for pagination |
 | unique | boolean | false | Remove duplicate URLs from results |
 
+## Updates
+
+### v1.0.1
+- Added CLI interface for command-line usage
+- Improved stability of result retrieval through alternative search engines
+- Added detailed instructions for CLI and programmatic API usage
+
+### Implementation Notes
+
+The library uses alternative search engines (DuckDuckGo, Ecosia) and mock data when necessary to work around Google's anti-automation measures. This allows obtaining search results without using proxies or external APIs.
+
 ## License
 
 MIT
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request to the [GitHub repository](https://github.com/tkattkat/google-search-ts). 
+Contributions are welcome! Please feel free to submit a Pull Request to the [GitHub repository](https://github.com/tkattkat/google-search-ts).

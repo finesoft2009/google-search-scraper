@@ -4,12 +4,16 @@
   "description": "A TypeScript library for performing Google searches with support for proxy, pagination, and customization",
   "main": "dist/googleSearch.js",
   "types": "dist/googleSearch.d.ts",
+  "bin": {
+    "google-search-ts": "./dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/googleSearch.js",
-    "dev": "ts-node src/test.ts"
+    "dev": "ts-node src/test.ts",
+    "cli": "node dist/cli.js"
   },
   "keywords": [
     "google",
