@@ -23,7 +23,12 @@ class GoogleSearch {
         const userAgents = [
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
         ];
         return userAgents[Math.floor(Math.random() * userAgents.length)];
     }
@@ -78,7 +83,8 @@ class GoogleSearch {
             'Pragma': 'no-cache',
             'DNT': '1',
             'Referer': 'https://www.google.com/',
-            'Origin': 'https://www.google.com'
+            'Origin': 'https://www.google.com',
+            'Cookie': 'CONSENT=YES+cb.20220301-17-p0.ru+FX+290; AEC=Ae3NU0wv33a6z2sL23a5v4r9w3z6a4x3b8y4c2u9v6s2r7v5w8e5e5f5; NID=298=abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567; 1P_JAR=2024-01-01-00; SID=abc123def456ghi789; HSID=def456ghi789jkl012; SSID=ghi789jkl012mno345; APISID=jkl012mno345pqr678; SAPISID=mno345pqr678stu901; SIDCC=abc123def456ghi789;'
         };
 
         const axiosConfig = {
