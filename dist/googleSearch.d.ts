@@ -16,7 +16,6 @@ interface SearchResult {
 declare class GoogleSearch {
     private static getRandomUserAgent;
     private static makeRequest;
-    private static tryAlternativeSearch;
     private static parseResults;
     static search(term: string, options?: SearchOptions): Promise<SearchResult[]>;
 }
