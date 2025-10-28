@@ -1,0 +1,125 @@
+{
+  "cookies": [
+    {
+      "name": "SNID",
+      "value": "AICKk4x6MkpO6AHYEglzu8xKvoRn7N2TUWZCGa6HTxWABkC3LJnoXJiPzE-SbirwtEba2fcOvfQLhO4EJ3X3R-BMU-t6I6UOKA",
+      "domain": ".google.com",
+      "path": "/verify",
+      "expires": 1777473805.383005,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "AEC",
+      "value": "AaJma5tCHVNReu_CVGoiPMVf376hO021UatGBgbdAf8sNyIDtHrq_BZvo9w",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1777214605.700594,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "NID",
+      "value": "526=R_ojo-xM5L_Y9FqbNSkOpwHSIz3sfZ1wuO-LTkxzGOpAx0JDAr2QSRXz-XCpjnLfdoenbDV5y2MJ1dcExqPzXMkw2Vvg84_agXMrVR7enLrwuu5SezuLK3hB9hGsBKb3G89KVkJDBvgy82pjbKDz1uLjohPi5Ly1aTBf6qzsfUS31YDfB5KYl4DBowZvO1WTqlRyf5rIJXFSEu-RiEFeDXWsiC6ogp8pVu0vHjpqXXLXkpSAZlLzd8ETaqo--A",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1777473805.382929,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__Secure-STRP",
+      "value": "ADq1D7q0SRp10puPVCxp-azePNXWNC3L_YNaA03pOBWInRtBIp_BMSif8AV5CMMQlvriHkWjQ7WLhZKbIyWGvognz1OW4jL7qg",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "DV",
+      "value": "Q32qnoNBNogeQIaWaSHSPtBjiGi0ohk",
+      "domain": "www.google.com",
+      "path": "/",
+      "expires": 1761663234,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "YSC",
+      "value": "C_nCxufYTf8",
+      "domain": ".youtube.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "VISITOR_INFO1_LIVE",
+      "value": "l-QzP5yo4wE",
+      "domain": ".youtube.com",
+      "path": "/",
+      "expires": 1777214635.938537,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "VISITOR_PRIVACY_METADATA",
+      "value": "CgJLWhIEGgAgbQ%3D%3D",
+      "domain": ".youtube.com",
+      "path": "/",
+      "expires": 1777214635.938622,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__Secure-ROLLOUT_TOKEN",
+      "value": "CL_l-L7D1Lb7sgEQ2bnw3JDHkAMYgcP_3JDHkAM%3D",
+      "domain": ".youtube.com",
+      "path": "/",
+      "expires": 1777214635.938671,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://www.google.com",
+      "localStorage": [
+        {
+          "name": "sb_wiz.zpc.gws-wiz-serp.",
+          "value": "{\"0\":[],\"1\":{\"av\":\"460853039067135377\",\"k\":1,\"q\":\"ZdnGWxCxwjGpF34GmKQvy4NAUK0\"}}"
+        },
+        {
+          "name": "sb_wiz.sr_di",
+          "value": "null"
+        },
+        {
+          "name": "sb_wiz.pq_tm_hp",
+          "value": "1761662634439"
+        },
+        {
+          "name": "sb_wiz.qc",
+          "value": "2"
+        },
+        {
+          "name": "sb_wiz.sc_pq",
+          "value": ""
+        },
+        {
+          "name": "sb_wiz.pq",
+          "value": "стеклопластиковая сетка"
+        }
+      ]
+    }
+  ]
+}

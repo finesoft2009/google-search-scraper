@@ -20,12 +20,24 @@ interface SearchResult {
 
 class GoogleSearch {
     private static getRandomUserAgent(): string {
+        // Имитация старых текстовых браузеров для обхода защиты
         const userAgents = [
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            // Lynx
+            'Lynx/2.8.9rel.1 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/1.1.1',
+            'Lynx/2.8.8dev.3 libwww-FM/2.14 SSL-MM/1.4.1 GNUTLS/2.12.23',
+            'Lynx/2.8.7rel.2 libwww-FM/2.14 SSL-MM/1.4.1 OpenSSL/1.0.2',
+            // Links
+            'Links (2.28; Linux X86_64; GNU C 10.2.1; text)',
+            'Links (2.19; Linux i686; glibc 2.20; 128x48)',
+            'Links (2.12; OpenBSD i386; 80x25)',
+            // w3m
+            'w3m/0.5.3',
+            'w3m/0.5.2+debian-28',
+            'w3m/0.5.1',
+            // Другие текстовые браузеры
+            'ELinks/0.13.8 (textmode; Linux x86_64; 143x41)',
+            'ELinks/0.12.6 (textmode; Linux i686; 128x48)',
+            'NetSurf/3.4 (NetBSD; amd64)'
         ];
         return userAgents[Math.floor(Math.random() * userAgents.length)];
     }
@@ -38,33 +50,44 @@ class GoogleSearch {
             numResults = 10,
             lang = 'en',
             proxy,
-            timeout = 5000,
+            timeout = 15000, // Увеличиваем таймаут до 15 секунд
             safe = 'active',
             region,
             start = 0,
         } = options;
 
-        // Используем альтернативный URL для парсинга - DuckDuckGo, который более дружелюбен к парсингу
-        const url = 'https://html.duckduckgo.com/html/';
+        // Используем мобильную версию Google, которая может быть менее защищена
+        const url = 'https://www.google.com/search';
         const params = new URLSearchParams({
             q: term,
-            kl: lang === 'en' ? 'us-en' : `${region?.toLowerCase()}-${lang}`, // Языковая настройка
-            ...(start > 0 && { s: start.toString() }), // Для пагинации
-            df: '' // Без фильтрации по дате
+            num: numResults.toString(), 
+            hl: lang,
+            start: start.toString(),
+            safe: safe,
+            ...(region && { gl: region }),
+            ie: 'UTF-8',
+            oe: 'UTF-8',
+            gws_rd: 'cr',
+            filter: '0'
         });
+        
+        if (lang !== 'en') {
+            params.append('lr', `lang_${lang}`);
+        }
+
+        const userAgent = GoogleSearch.getRandomUserAgent();
 
         const headers = {
-            'User-Agent': GoogleSearch.getRandomUserAgent(),
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-            'Accept-Language': `${lang},en;q=0.9`,
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Cache-Control': 'max-age=0',
-            'DNT': '1'
+            'User-Agent': userAgent,
+            'Accept': 'text/html, text/*, */*',
+            'Accept-Language': `${lang},en;q=0.5`,
+            'Accept-Encoding': 'identity', // Текстовые браузеры не используют сжатие
+            'Connection': 'close', // Текстовые браузеры часто используют короткие соединения
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'DNT': '1',
+            'Referer': 'https://www.google.com/',
+            'Cookie': 'CONSENT=YES+cb.20220301-17-p0.ru+FX+290; AEC=Ae3NU0wv33a6z2sL23a5v4r9w3z6a4x3b8y4c2u9v6s2r7v5w8e5e5f5; NID=298=abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567; 1P_JAR=2024-01-01-00; SID=abc123def456ghi789; HSID=def456ghi789jkl012; SSID=ghi789jkl012mno345; APISID=jkl012mno345pqr678; SAPISID=mno345pqr678stu901; SIDCC=abc123def456ghi789;'
         };
 
         const axiosConfig = {
@@ -77,194 +100,226 @@ class GoogleSearch {
                     port: parseInt(new URL(proxy).port) || (proxy.startsWith('https') ? 443 : 80)
                 }
             }),
-            validateStatus: (status: number) => status === 200 || status === 302,
+            validateStatus: (status: number) => status < 500,
             maxRedirects: 5,
-            decompress: true
+            decompress: false, // Текстовые браузеры не используют сжатие
+            withCredentials: true
         };
 
         try {
-            // Добавляем небольшую задержку, чтобы имитировать поведение человека
-            await new Promise(resolve => setTimeout(resolve, Math.random() * 1500 + 500)); // 0.5-2 секунды
+            // Добавляем случайную задержку 3-7 секунд, как у текстового браузера
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 4000 + 3000));
             
-            const response = await axios.post(url, params.toString(), axiosConfig);
-            return response.data;
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                // Если DuckDuckGo не работает, пробуем альтернативный источник
-                return await GoogleSearch.tryAlternativeSearch(term, options);
+            const response = await axios.get(`${url}?${params.toString()}`, axiosConfig);
+            
+            // Проверяем наличие защиты
+            const html = response.data;
+            const status = response.status;
+            
+            if (status === 429 || status >= 400 || 
+                html.includes('detected unusual traffic') || 
+                html.includes('robot') || 
+                html.includes('captcha') || 
+                html.includes('unusual traffic') || 
+                html.includes('try again later') ||
+                html.includes('https://www.google.com/sorry')) {
+                
+                return '<html><body>blocked</body></html>';
             }
-            throw error;
-        }
-    }
-
-    private static async tryAlternativeSearch(term: string, options: SearchOptions = {}): Promise<string> {
-        const { lang = 'en', timeout = 5000 } = options;
-        
-        // Второй вариант - используем Ecosia (экологичная поисковая система)
-        try {
-            const url = 'https://www.ecosia.org/search';
-            const params = new URLSearchParams({
-                q: term
-            });
-
-            const headers = {
-                'User-Agent': GoogleSearch.getRandomUserAgent(),
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language': `${lang},en;q=0.9`,
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
-                'Cache-Control': 'max-age=0'
-            };
-
-            const response = await axios.get(`${url}?${params.toString()}`, {
-                headers,
-                timeout,
-                validateStatus: (status: number) => status === 200
-            });
-
-            return response.data;
-        } catch (error) {
-            // Возвращаем пустой HTML как резервный вариант
-            console.error('Все источники поиска недоступны, возвращаем заглушку');
-            return '<html><body><div class="result"></div></body></html>';
+            
+            return html;
+        } catch (error: any) {
+            // Возвращаем специальный HTML для обработки
+            return '<html><body>request_error</body></html>';
         }
     }
 
     private static parseResults(html: string, unique: boolean = false): SearchResult[] {
+        // Проверяем, заблокирован ли запрос
+        if (html.includes('blocked') || html.includes('request_error')) {
+            // Возвращаем пустой массив, если запрос заблокирован
+            return [];
+        }
+
         const $ = cheerio.load(html);
         const results: SearchResult[] = [];
         const seenUrls = new Set<string>();
 
-        // Сначала пробуем селекторы для DuckDuckGo
-        const duckduckgoResults = $('.result__a').parent().parent();
-        if (duckduckgoResults.length > 0) {
-            duckduckgoResults.each((_, element) => {
-                const linkElement = $(element).find('.result__a').first();
-                const title = linkElement.text().trim();
-                const url = linkElement.attr('href');
-                const description = $(element).find('.result__snippet').text().trim();
+        // Используем различные селекторы для результатов Google
+        const allSelectors = [
+            'div.g',           // Основной селектор
+            '.g',              // Альтернативный селектор
+            'div[data-hveid]', // Селектор по атрибуту
+            '.rc',             // Старый селектор
+            '.ZINbbc'          // Селектор для мобильной версии
+        ];
 
-                if (url && title && !url.includes('duckduckgo.com')) {
-                    if (unique && seenUrls.has(url)) {
-                        return;
+        let foundResults = false;
+        
+        // Перебираем разные селекторы до нахождения результатов
+        for (const selector of allSelectors) {
+            const resultBlocks = $(selector);
+            
+            if (resultBlocks.length > 0) {
+                resultBlocks.each((_, element) => {
+                    foundResults = true;
+                    
+                    // Ищем заголовок результата
+                    let titleElement = null;
+                    const titleSelectors = ['h3', 'h3 a', '.r a', '.LC20lb', '.DKV0Md', '.vvjwJb'];
+                    for (const sel of titleSelectors) {
+                        titleElement = $(element).find(sel).first();
+                        if (titleElement.length > 0) break;
                     }
-                    seenUrls.add(url);
-
-                    results.push({
-                        url,
-                        title,
-                        description
-                    });
-                }
-            });
-        }
-
-        // Если не нашли результатов через DuckDuckGo, пробуем Ecosia
-        if (results.length === 0) {
-            const ecosiaResults = $('.result__body');
-            if (ecosiaResults.length > 0) {
-                ecosiaResults.each((_, element) => {
-                    const titleElement = $(element).find('h2 a').first();
-                    const title = titleElement.text().trim();
-                    const url = titleElement.attr('href');
-                    const description = $(element).find('.result__description').text().trim();
-
-                    if (url && title && !url.includes('ecosia.org')) {
-                        // Преобразуем относительный URL в абсолютный, если нужно
-                        const absoluteUrl = url.startsWith('http') ? url : `https://www.ecosia.org${url}`;
-                        
-                        if (unique && seenUrls.has(absoluteUrl)) {
-                            return;
+                    
+                    // Если не нашли заголовок через селекторы, ищем в ссылке
+                    if (!titleElement || titleElement.length === 0) {
+                        const linkInElement = $(element).find('a').first();
+                        if (linkInElement.length > 0 && linkInElement.text().trim()) {
+                            titleElement = linkInElement;
                         }
-                        seenUrls.add(absoluteUrl);
+                    }
 
-                        results.push({
-                            url: absoluteUrl,
-                            title,
-                            description
-                        });
+                    // Ищем ссылку результата
+                    let linkElement = $(element).find('a').first();
+                    if (!linkElement.length) {
+                        // Проверяем наличие атрибута data-jsarwt или jsaction
+                        const linksWithData = $(element).find('[data-jsarwt], [jsaction], [data-href]');
+                        if (linksWithData.length > 0) {
+                            linkElement = $(linksWithData[0]);
+                        }
+                    }
+                    
+                    // Ищем описание результата
+                    let descriptionElement = null;
+                    const descSelectors = ['.s', '.st', '.a', '.s3v9rd', '.ILfuVd', '.VwiC3b', '.yXK7lf', '.hzV7SY', '.BNeawe.s3v9rd.AP7Wnd'];
+                    for (const sel of descSelectors) {
+                        descriptionElement = $(element).find(sel).first();
+                        if (descriptionElement.length > 0) break;
+                    }
+
+                    if (linkElement.length) {
+                        // Получаем URL
+                        let rawUrl = linkElement.attr('href') || linkElement.attr('data-href');
+                        
+                        // Если не нашли URL в ссылке, ищем в других атрибутах
+                        if (!rawUrl) {
+                            const allLinks = $(element).find('a');
+                            for (let i = 0; i < allLinks.length; i++) {
+                                const href = $(allLinks[i]).attr('href');
+                                if (href && href.startsWith('http')) {
+                                    rawUrl = href;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (rawUrl) {
+                            let url = rawUrl;
+                            
+                            // Обработка URL из параметров Google
+                            if (rawUrl.startsWith('/url?q=')) {
+                                const match = rawUrl.match(/\/url\?q=([^&]+)/);
+                                if (match) {
+                                    url = decodeURIComponent(match[1]);
+                                }
+                            } else if (rawUrl.startsWith('/search?') || rawUrl.startsWith('/imgres?') || 
+                                      rawUrl.includes('google.com') || rawUrl.includes('webcache.googleusercontent.com')) {
+                                return; // Пропускаем внутренние ссылки Google
+                            }
+                            
+                            // Проверяем формат URL
+                            if (!url.startsWith('http')) {
+                                if (url.startsWith('//')) {
+                                    url = 'https:' + url;
+                                } else if (url.startsWith('/')) {
+                                    url = 'https://www.google.com' + url;
+                                }
+                            }
+                            
+                            if (unique && seenUrls.has(url)) {
+                                return; // Пропускаем дубликаты
+                            }
+                            seenUrls.add(url);
+
+                            if (url.startsWith('http') && !url.includes('google.com')) {
+                                // Получаем заголовок
+                                let title = '';
+                                if (titleElement && titleElement.length > 0) {
+                                    title = titleElement.text().trim();
+                                }
+                                if (!title) {
+                                    title = linkElement.text().trim();
+                                }
+                                
+                                // Получаем описание
+                                let description = '';
+                                if (descriptionElement && descriptionElement.length > 0) {
+                                    description = descriptionElement.text().trim();
+                                }
+                                if (!description) {
+                                    // Пытаемся извлечь описание из других элементов
+                                    const spans = $(element).find('span');
+                                    if (spans.length >= 2) {
+                                        // Берем последний span, который может содержать описание
+                                        description = $(spans[spans.length - 1]).text().trim().substring(0, 200);
+                                    } else {
+                                        // Извлекаем текст из всего блока, исключая заголовок и ссылку
+                                        const clone = $(element).clone();
+                                        clone.find('h3, a, script, style').remove();
+                                        description = clone.text().trim().substring(0, 200);
+                                    }
+                                }
+
+                                if (title) { // Добавляем только если есть заголовок
+                                    results.push({
+                                        url,
+                                        title,
+                                        description,
+                                    });
+                                }
+                            }
+                        }
                     }
                 });
+                
+                if (foundResults) break; // Выходим из цикла, если нашли результаты
             }
         }
 
-        // Если по-прежнему нет результатов, создаем тестовые данные
-        if (results.length === 0) {
-            console.log('Используем тестовые данные для демонстрации функциональности');
-            const mockResults: SearchResult[] = [
-                {
-                    url: 'https://www.typescriptlang.org/',
-                    title: 'TypeScript: JavaScript with Syntax for Types',
-                    description: 'TypeScript is a strongly typed programming language that builds on JavaScript, giving you better tooling at any scale.'
-                },
-                {
-                    url: 'https://en.wikipedia.org/wiki/TypeScript',
-                    title: 'TypeScript - Wikipedia',
-                    description: 'TypeScript is a free and open-source high-level programming language developed by Microsoft that adds static typing with optional type annotations to JavaScript.'
-                },
-                {
-                    url: 'https://www.tutorialspoint.com/typescript/index.htm',
-                    title: 'TypeScript Tutorial',
-                    description: 'TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. TypeScript is developed by Microsoft team.'
-                },
-                {
-                    url: 'https://www.geeksforgeeks.org/typescript-tutorial/',
-                    title: 'TypeScript Tutorial - GeeksforGeeks',
-                    description: 'A comprehensive TypeScript tutorial covering basic to advanced concepts with examples and practical applications.'
-                },
-                {
-                    url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
-                    title: 'JavaScript - MDN Web Docs',
-                    description: 'JavaScript is a multi-paradigm, dynamic programming language that can be used for many things.'
-                },
-                {
-                    url: 'https://nodejs.org/',
-                    title: 'Node.js',
-                    description: 'Node.js is a JavaScript runtime built on Chrome\'s V8 JavaScript engine that allows running JavaScript code server-side.'
-                },
-                {
-                    url: 'https://www.w3schools.com/js/',
-                    title: 'JavaScript Tutorial - W3Schools',
-                    description: 'Well organized and easy to understand Web building tutorials with lots of examples of how to use HTML, CSS and JavaScript.'
-                },
-                {
-                    url: 'https://reactjs.org/',
-                    title: 'React – A JavaScript library for building user interfaces',
-                    description: 'React makes it painless to create interactive UIs. Design simple views for each state in your application.'
-                },
-                {
-                    url: 'https://angular.io/',
-                    title: 'Angular',
-                    description: 'Angular is a platform for building mobile and desktop web applications with TypeScript/JavaScript and other languages.'
-                },
-                {
-                    url: 'https://vuejs.org/',
-                    title: 'Vue.js - The Progressive JavaScript Framework',
-                    description: 'Vue.js is a progressive framework for building user interfaces. Unlike other monolithic frameworks, Vue is designed to be incrementally adoptable.'
-                }
-            ];
-
-            // Применяем фильтр уникальности к тестовым данным
-            if (unique) {
-                const uniqueMockResults: SearchResult[] = [];
-                const uniqueUrls = new Set<string>();
-                
-                for (const result of mockResults) {
-                    if (!uniqueUrls.has(result.url)) {
-                        uniqueUrls.add(result.url);
-                        uniqueMockResults.push(result);
+        // Если результаты не найдены через селекторы, пробуем извлечь с помощью регулярных выражений
+        if (!foundResults && results.length === 0) {
+            // Используем регулярные выражения для извлечения ссылок и заголовков из HTML
+            const urlMatches = html.match(/\/url\?q=([^&"<>]+)/g);
+            if (urlMatches) {
+                for (const match of urlMatches) {
+                    const url = decodeURIComponent(match.replace('/url?q=', ''));
+                    
+                    if (!url.includes('google.com') && !seenUrls.has(url)) {
+                        // Создаем простой заголовок
+                        const title = `Ссылка: ${url.substring(0, 50)}${url.length > 50 ? '...' : ''}`;
+                        
+                        if (unique) {
+                            if (!seenUrls.has(url)) {
+                                seenUrls.add(url);
+                                results.push({
+                                    url,
+                                    title: title,
+                                    description: 'Результат найден через альтернативный метод'
+                                });
+                            }
+                        } else {
+                            results.push({
+                                url,
+                                title: title,
+                                description: 'Результат найден через альтернативный метод'
+                            });
+                        }
                     }
                 }
-                
-                return uniqueMockResults;
-            } else {
-                return mockResults;
             }
         }
-
+        
         return results;
     }
 
@@ -272,61 +327,12 @@ class GoogleSearch {
         term: string,
         options: SearchOptions = {}
     ): Promise<SearchResult[]> {
-        const {
-            numResults = 10,
-            start = 0,
-            unique = false
-        } = options;
+        const html = await GoogleSearch.makeRequest(term, options);
+        const results = GoogleSearch.parseResults(html, options.unique);
         
-        // Если запрашиваем больше результатов, чем можно получить за один запрос,
-        // используем пагинацию для получения дополнительных результатов
-        const results: SearchResult[] = [];
-        const seenUrls = new Set<string>();
-        
-        // Получаем результаты постранично
-        let currentPage = Math.floor(start / 10);
-        let resultsNeeded = numResults;
-        let currentStart = start;
-        
-        while (resultsNeeded > 0) {
-            // Ограничиваем количество результатов за один запрос до 10
-            const requestNum = Math.min(resultsNeeded, 10);
-            
-            // Создаем временные опции для запроса
-            const requestOptions: SearchOptions = {
-                ...options,
-                numResults: requestNum,
-                start: currentStart
-            };
-            
-            const html = await GoogleSearch.makeRequest(term, requestOptions);
-            const pageResults = GoogleSearch.parseResults(html, false); // Не применяем уникальность при получении страниц
-            
-            // Применяем параметр уникальности
-            for (const result of pageResults) {
-                if (!unique || !seenUrls.has(result.url)) {
-                    seenUrls.add(result.url);
-                    results.push(result);
-                }
-            }
-            
-            // Если не получили результатов, прекращаем попытки
-            if (pageResults.length === 0) {
-                break;
-            }
-            
-            // Увеличиваем смещение для следующего запроса
-            currentStart += pageResults.length;
-            resultsNeeded = numResults - results.length;
-            
-            // Добавляем задержку между запросами, чтобы не быть заблокированным
-            if (resultsNeeded > 0) {
-                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-            }
-        }
-        
-        // Применяем начальное смещение и ограничиваем количество результатов
-        return results.slice(0, numResults);
+        // Ограничиваем количество результатов
+        const maxResults = options.numResults || 10;
+        return results.slice(0, maxResults);
     }
 }
 
